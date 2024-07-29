@@ -6,8 +6,8 @@ except ModuleNotFoundError:
     print('Run: \'pip install pyotp\' first!')
     exit()
 try:
-    from pyperclip import copy, is_available
-    pyperclip_available = is_available()
+    from pyperclip import copy, PyperclipException
+    pyperclip_available = True
 except ModuleNotFoundError:
     pyperclip_available = False
 
@@ -67,6 +67,9 @@ if __name__ == '__main__':
         secret, value = get_otp(args.key, c_parser)
         key = args.key if not args.key.isdigit() else {value:key for key, value in c_parser.defaults().items()}[secret]
         if pyperclip_available:
-            copy(value)
+            try:
+                copy(value)
+            except PyperclipException:
+                pyperclip_available = False
         if not args.quiet or pyperclip_available == False:
             print('{key}: {value}{extra}'.format(key=key, value=value, extra='\nCopied to clipboard!' if pyperclip_available else ''))
