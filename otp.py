@@ -17,7 +17,7 @@ def get_otp(value:str, config:ConfigParser) -> tuple:
     except NoOptionError:
         print('No existe la opción {}.'.format(value))
         exit(1)
-    secret_code = TOTP(result)
+    secret_code = TOTP(result.replace(' ', ''))
     return result, secret_code.now()
 
 def get_max_length(iterable) -> int:
@@ -38,10 +38,10 @@ def show_keys(config:ConfigParser) -> None:
     for key, value in config.defaults().items():
         print(key.ljust(max_length) + ' : ' + value)
 
-def main(config:ConfigParser) -> None:
+def print_all_codes(config:ConfigParser) -> None:
     max_length = get_max_length(config.defaults().keys())
-    for key, value in config.defaults().items():
-        print(key.ljust(max_length) + ' : ' + TOTP(value).now())
+    for key in config.defaults().keys():
+        print(key.ljust(max_length) + ' : ' + get_otp(key, config)[1])
 
 if __name__ == '__main__':
     parser = ArgumentParser()
@@ -62,7 +62,7 @@ if __name__ == '__main__':
         show_keys(c_parser)
         exit(0)
     if args.key == None:
-        main(c_parser)
+        print_all_codes(c_parser)
     else:
         secret, value = get_otp(args.key, c_parser)
         key = args.key if not args.key.isdigit() else {value:key for key, value in c_parser.defaults().items()}[secret]
